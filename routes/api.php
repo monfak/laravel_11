@@ -9,5 +9,11 @@ Route::group(['namespace' => 'App\Http\Controllers\Auth','prefix' => 'auth'], fu
     Route::post('logout', 'LoginRegisterController@logout');
 });
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return $request->user() ? [
+        'success'=>true,
+        'data'=>$request->user()?->FilterApiSelect()
+    ] : [
+        'success'=>false,
+        'data'=>[]
+    ];
 })->middleware('auth:sanctum');

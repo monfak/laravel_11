@@ -79,12 +79,7 @@ class LoginRegisterController extends Controller
 
         // Check email exist
         $user = User::with('permissions')->where('phone', $request->phone)
-            ->select(
-                'id',
-                'name',
-                'phone',
-                'email',
-            )
+            ->FilterApiSelect()
             ->first();
 
         // Check password

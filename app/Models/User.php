@@ -46,4 +46,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function scopeFilterApiSelect($query)
+    {
+        return $query->select(
+            'id',
+            'name',
+            'phone',
+            'email',
+        ) ;
+    }
 }
