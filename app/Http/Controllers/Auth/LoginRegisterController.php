@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -77,30 +78,36 @@ class LoginRegisterController extends Controller
             ], 200);
         }
 
-        // Check email exist
-        $user = User::with('permissions')->where('phone', $request->phone)
-            ->FilterApiSelect()
-            ->first();
 
-        // Check password
-        if(!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
+        $credentials = [
+            'phone'=>$request->phone,
+            'password'=>$request->password,
+        ];
+        $token = auth('api')->attempt($credentials);
+        if (!$token)
+        {
+            $response = [
                 'success' => false,
                 'status' => 'failed',
                 'messages' => [
                     'phone'=>'نام کاربری یا رمز عبور اشتباه می باشد .'
                 ]
-            ], 200);
+            ];
         }
-        $data['token'] = $user->createToken($request->email)->plainTextToken;
-        $data['user'] = $user;
+        else
+        {
+            $user = auth('api')->user() ;
+            $user->permissions = $user->allPermissions()->pluck('name')->toArray() ;
+            $data['token'] = $token;
+            $data['user'] = $user;
 
-        $response = [
-            'success' => true,
-            'status' => 'success',
-            'message' => 'User is logged in successfully.',
-            'data' => $data,
-        ];
+            $response = [
+                'success' => true,
+                'status' => 'success',
+                'message' => 'User is logged in successfully.',
+                'data' => $data,
+            ];
+        }
 
         return response()->json($response, 200);
     }
@@ -118,5 +125,12 @@ class LoginRegisterController extends Controller
             'status' => 'success',
             'message' => 'User is logged out successfully'
         ], 200);
+    }
+
+    public function test()
+    {
+        $user = User::find(1) ;
+        $role = Role::find(1);
+        dd($user->allPermissions()->pluck('name'),$user->roles,$role->permissions) ;
     }
 }
